@@ -857,45 +857,47 @@ if (css_style_name=="#barChart")
 LINE CHART 
 */
 
-var datasetLineChart = [
 
-{ group: "All", category: "Honda Accord", measure:  28345 }, 
-{ group: "All", category: "Honda Civic", measure: 28045 }, 
-{ group: "All", category: "Chevrolet Pickup", measure: 12206 }, 
-{ group: "All", category: "Ford Pickup", measure: 7897 }, 
-{ group: "All", category: "Dodge Pickup", measure: 2898 }, 
+var datasetLineChart = [
+{ group: "All", category: "Toyota Camry", measure:7604}, 
+{ group: "All", category: "Nissan Altima", measure:1098}, 
+{ group: "All", category: "Honda Accord", measure:35805}, 
+{ group: "All", category: "GMC Pickup", measure:1450}, 
+{ group: "All", category: "Ford Pickup", measure:16170}, 
+{ group: "All", category: "Honda Civic", measure:32938}, 
+{ group: "All", category: "Dodge Pickup", measure:2898}, 
+{ group: "All", category: "Acura Integra", measure:640}, 
+{ group: "All", category: "Chevrolet Pickup", measure:13154}, 
 
 { group: "California", category: "Honda Accord", measure:  28345 }, 
-{ group: "California", category: "Honda Civic", measure: 28045 }, 
-{ group: "California", category: "Chevrolet Pickup", measure: 6048 }, 
-{ group: "California", category: "Ford Pickup", measure: 0 }, 
-{ group: "California", category: "Dodge Pickup", measure: 0 }, 
+{ group: "California", category: "Honda Civic", measure:  28045 }, 
+{ group: "California", category: "Chevrolet Pickup", measure:  6048 }, 
+{ group: "California", category: "Toyota Camry", measure:  5345 }, 
+{ group: "California", category: "Ford Pickup", measure:  4504 }, 
+{ group: "Florida", category: "Ford Pickup", measure:  2070 }, 
+{ group: "Florida", category: "Honda Civic", measure:  1127 }, 
+{ group: "Florida", category: "Nissan Altima", measure:  1098 }, 
+{ group: "Florida", category: "Toyota Camry", measure:  1089 }, 
+{ group: "Florida", category: "Honda Accord", measure:  1025 }, 
+{ group: "Georgia", category: "Honda Accord", measure:  1052 }, 
+{ group: "Georgia", category: "Ford Pickup", measure:  954 }, 
+{ group: "Georgia", category: "Chevrolet Pickup", measure:  948 }, 
+{ group: "Georgia", category: "Honda Civic", measure:  653 }, 
+{ group: "Georgia", category: "Toyota Camry", measure:  568 }, 
+{ group: "Texas", category: "Ford Pickup", measure:  7897 }, 
+{ group: "Texas", category: "Chevrolet Pickup", measure:  6158 }, 
+{ group: "Texas", category: "Dodge Pickup", measure:  2898 }, 
+{ group: "Texas", category: "Honda Accord", measure:  1626 }, 
+{ group: "Texas", category: "GMC Pickup", measure:  1450 }, 
+{ group: "Washington", category: "Honda Accord", measure:  3757 }, 
+{ group: "Washington", category: "Honda Civic", measure:  3113 }, 
+{ group: "Washington", category: "Ford Pickup", measure:  745 }, 
+{ group: "Washington", category: "Acura Integra", measure:  640 }, 
+{ group: "Washington", category: "Toyota Camry", measure:  602 }
+]
+;
 
-{ group: "Texas", category: "Honda Accord", measure:  0 }, 
-{ group: "Texas", category: "Honda Civic", measure: 0 }, 
-{ group: "Texas", category: "Chevrolet Pickup", measure: 6158 }, 
-{ group: "Texas", category: "Ford Pickup", measure: 7897 }, 
-{ group: "Texas", category: "Dodge Pickup", measure: 2898 },
 
-{ group: "Washington", category: "Honda Accord", measure:  20 }, 
-{ group: "Washington", category: "Honda Civic", measure: 50 }, 
-{ group: "Washington", category: "Chevrolet Pickup", measure: 100 }, 
-{ group: "Washington", category: "Ford Pickup", measure: 170 }, 
-{ group: "Washington", category: "Dodge Pickup", measure: 290 },
-
-{ group: "Florida", category: "Honda Accord", measure:  500 }, 
-{ group: "Florida", category: "Honda Civic", measure: 600 }, 
-{ group: "Florida", category: "Chevrolet Pickup", measure: 925 }, 
-{ group: "Florida", category: "Ford Pickup", measure: 1000 }, 
-{ group: "Florida", category: "Dodge Pickup", measure: 2100 },
-
-{ group: "Georgia", category: "Honda Accord", measure:  4000 }, 
-{ group: "Georgia", category: "Honda Civic", measure: 7000 }, 
-{ group: "Georgia", category: "Chevrolet Pickup", measure: 11000 }, 
-{ group: "Georgia", category: "Ford Pickup", measure: 3999 }, 
-{ group: "Georgia", category: "Dodge Pickup", measure: 6000 }
-
-];
 
 
 var group = "All";
@@ -912,7 +914,7 @@ function datasetLineChartChosen(group) {
 
 function dsLineChartBasics() {
 	var margin = {top: 20, right: 10, bottom: 20, left: 50},
-	    width = 800 - margin.left - margin.right,
+	    width = 1000 - margin.left - margin.right,
 	    height = 120 - margin.top - margin.bottom
 	    ;
 		return {
@@ -990,7 +992,8 @@ function dsLineChart() {
 	    .data(firstDatasetLineChart)
 	  	 .enter().append("circle")
 	    .attr("class", "dot")
-	    .attr("fill", function (d) { return d.measure==d3.min(firstDatasetLineChart, function(d) { return d.measure; }) ? "red" : (d.measure==d3.max(firstDatasetLineChart, function(d) { return d.measure; }) ? "green" : "black") } )
+	    .attr("fill", function (d) { return d.measure==d3.min(firstDatasetLineChart, function(d) 
+		{ return d.measure; }) ? "green" : (d.measure==d3.max(firstDatasetLineChart, function(d) { return d.measure; }) ? "red" : "orange") } )
 	    .attr("cx", line.x())
 	    .attr("cy", line.y())
 	    .attr("r", 3.5)
@@ -1034,14 +1037,27 @@ function updateLineChart(group, colorChosen) {
 	    .range([height, 0])
 	    ;
 
+
 	var line = d3.svg.line()
     .x(function(d, i) { return xScale(i); })
     .y(function(d) { return yScale(d.measure); })
     ;
 
-   var plot = d3.select("#lineChartPlot")
-   	.datum(currentDatasetLineChart)
-	   ;
+	d3.selectAll("#lineChart svg").remove();
+ 
+ 
+	var svg = d3.select("#lineChart").append("svg")
+	    .datum(currentDatasetLineChart)
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+ 
+ 	var plot = svg
+	    .append("g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+	    .attr("id", "lineChartPlot")
+	    ;
+
+
 
 	 
 	var dsLength=currentDatasetLineChart.length;
@@ -1055,34 +1071,46 @@ function updateLineChart(group, colorChosen) {
  });
  	
 
-	plot.select("text")
-	.text(dsSum);
+	plot.append("text")
+	.text(dsSum)
+	.attr("id","lineChartTitle2")
+		.attr("x",width/2)
+		.attr("y",height/2)
+		;
 		
-	plot
-	.select("path")
-		.transition()
-		.duration(750)
-	   .attr("class", "line")
-	   .attr("d", line)
-		.attr("stroke", colorChosen)
-	   ;
+	plot.append("path")
+	    .attr("class", "line")
+	    .attr("d", line)
+	   	.attr("stroke", "lightgrey")
+	    ;
 
 	var path = plot
 		.selectAll(".dot")
 	   .data(currentDatasetLineChart)
-	   .transition()
-		.duration(750)
+	    .enter().append("circle")
 	   .attr("class", "dot")
-	   .attr("fill", function (d) { return d.measure==d3.min(currentDatasetLineChart, function(d) { return d.measure; }) ? "red" : (d.measure==d3.max(currentDatasetLineChart, function(d) { return d.measure; }) ? "green" : "black") } )
+	   .attr("fill", function (d) { return d.measure==d3.min(currentDatasetLineChart, function(d) 
+	   { return d.measure; }) ? "green" : (d.measure==d3.max(currentDatasetLineChart, function(d) 
+	   { return d.measure; }) ? "red" : "orange") } )
 	   .attr("cx", line.x())
 	   .attr("cy", line.y())
 	   .attr("r", 3.5)
 		.attr("stroke", colorChosen)
+		.append("title")
+	    .text(function(d) { return d.category + ": " + formatAsInteger(d.measure); })
+		
 	   ;
  
-   var svg = d3.select("#lineChart svg").select("#lineChartTitle1") 
-	.text("Total Car Thefts for "+group+" state ");
-		
+ 
+ svg.append("text")
+		.attr("x",margin.left + ((width + margin.right)/2))
+		.attr("y", 10)
+		.attr("class","title")	
+		.attr("text-anchor", "middle")
+		.attr("id","lineChartTitle1")
+		.text("Total Car Thefts for "+group+" state ");
+		;
+ 
 }
 
 
