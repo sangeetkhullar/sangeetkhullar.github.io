@@ -267,7 +267,7 @@ function dsPieChart(){
 		vis.append("svg:text")
 	     	.attr("dy", ".35em")
 	      .attr("text-anchor", "middle")
-	      .text("Car Thefts in 2015- Top States")
+	      .text("Car Thefts in USA - Top States")
 	      .attr("class","title")
 	      ;		    
 
@@ -687,7 +687,7 @@ function dsBarChart(css_style_name) {
 	var barChart_Title;
 	if (css_style_name=="#barChart")
 		{
-			barChart_Title="Top Car Theft Statistics by Car Model in 2015"
+			barChart_Title="Top Car Theft Statistics by Car Model"
 		}
 	else 
 		{
@@ -833,7 +833,7 @@ if (css_style_name=="#barChart")
 	var barChart_Title;
 	if (css_style_name=="#barChart")
 		{
-			barChart_Title="Top Car Theft Statistics by Car Model in 2015 for "+group;
+			barChart_Title="Top Car Theft Statistics by Car Model for "+group;
 		}
 	else 
 		{
@@ -1005,7 +1005,7 @@ function dsLineChart() {
 		.attr("class","title")	
 		.attr("text-anchor", "middle")
 		.attr("id","lineChartTitle1")
-		.text("Total Car Thefts for top states in 2015")
+		.text("Total Car Thefts for Top States")
 		;
 }
 
@@ -1081,7 +1081,7 @@ function updateLineChart(group, colorChosen) {
 	   ;
  
    var svg = d3.select("#lineChart svg").select("#lineChartTitle1") 
-	.text("Total Car Thefts for "+group+" state in 2015");
+	.text("Total Car Thefts for "+group+" state ");
 		
 }
 
