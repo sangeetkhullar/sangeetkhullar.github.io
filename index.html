@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>    
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Drill Down Story</title>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<style type="text/css">
+
+#pieChart {    
+	position:absolute;
+	top:10px;
+	left:10px;
+	width:600px;
+	height: 600px; 
+}
+
+#lineChart {    
+	position:absolute;
+	top:10px;
+	left:600px;
+	height: 100px;
+}
+
+#barChart {
+	position:absolute;
+	top:200px;
+	left:600px;
+	height: 250px;
+}
+
+#barChart2 {
+	position:absolute;
+	top:450px;
+	left:600px;
+	height: 250px;
+}
+
+.slice {
+   font-size: 12pt;
+   font-family: Verdana;
+   fill: white;  
+   font-weight: bold;	
+  		} 
+
+.axis path, .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;  
+}
+
+.line {
+  fill: none;
+  /*stroke: steelblue;*/
+  stroke-width: 3px;
+}
+
+.dot {
+  /*fill: white;*/
+  /*stroke: steelblue;*/
+  stroke-width: 1.5px;
+  }
+				
+
+.axis text {
+    font-family: Verdana;
+    font-size: 11px;
+}
+
+.title {
+	 font-family: Verdana;
+    font-size: 15px;	
+		
+}
+
+.xAxis {
+    font-family: verdana;
+    font-size: 11px;
+    fill: black;
+}  
+
+.yAxis {
+    font-family: verdana;
+    font-size: 11px;
+    fill: white;
+}
+
+  
+table {
+	border-collapse:collapse;
+	border: 0px;	
+	font-family: Verdana;	
+	color: #5C5558;
+	font-size: 12px;
+	text-align: right;			
+}
+
+td {
+	padding-left: 10px;		
+}
+
+#lineChartTitle1 {
+	font-family: Verdana;
+	font-size  : 14px;
+	fill       : grey;
+	font-weight: bold;
+	text-anchor: middle;
+}
+
+#lineChartTitle2 {
+	font-family: Verdana;
+	font-size  : 36px;
+	fill       : grey;
+	text-anchor: middle;
+	font-weight: bold;
+	/*font-style: italic;*/
+}
+
+ 
+#tooltip {
+    position: absolute;
+    width: 150px;
+    height: auto;
+    padding: 10px;
+    background-color: white;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -mox-box-shadow: 4px 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rbga(0, 0, 0, 0.4) pointer-events: none;
+}
+#tooltip.hidden {
+    opacity: 0;
+}
+#tooltip p {
+    margin: 0;
+    font-family: sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+}
+	
+.legend {
+		font-size: 20px;         
+		font-weight: bold;         
+		text-anchor: start;
+		}	
+	  
+  </style>
+  </head>
+<body>
+  
+    <div id="pieChart"></div>
+    <div id="barChart"></div> 
+	<div id="barChart2"></div>  	
+    <div id="lineChart"></div>
+	
+	<div id="tooltip" class="hidden">
+    <p><strong><span id="nameOfState">"test"</span></strong></p>
+</div>
+	
+<script type="text/javascript">
+
+
+ var 	formatAsPercentage = d3.format(".0%"),
+		formatAsPercentage1Dec = d3.format(".1%"),
+		formatAsInteger = d3.format(",")
+		color = d3.scale.category20()  ;
+
+function dsPieChart(){
+	
+	var dataset = [
+		  {category: "California"	, measure: 72287},
+	      {category: "Texas"		, measure: 20029},
+		  {category: "Washington"	, measure: 8857},
+	      {category: "Florida"		, measure: 6409},
+	      {category: "Georgia"		, measure: 4175}
+	      ]
+	     ;
+	 
+	 
+	var    width = 550,
+		   height = 550,
+		   outerRadius = 250,
+		   innerRadius = outerRadius * .999,   
+		   innerRadiusFinal = outerRadius * .5,
+		   innerRadiusFinal3 = outerRadius* .45;
+		   
+	    
+	var vis = d3.select("#pieChart")
+	     .append("svg:svg")               
+	     .data([dataset])                 
+	         .attr("width", width)        
+	         .attr("height", height)      
+	     		.append("svg:g")                 
+	         .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")     
+				;
+				
+   var arc = d3.svg.arc()              
+        	.outerRadius(outerRadius).innerRadius(innerRadius);
+   
+   var  arcFinal = d3.svg.arc().innerRadius(innerRadiusFinal).outerRadius(outerRadius);
+   var  arcFinal3 = d3.svg.arc().innerRadius(innerRadiusFinal3).outerRadius(outerRadius);
+
+   var pie = d3.layout.pie()
+        .value(function(d) { return d.measure; });   
+		
+   var arcs = vis.selectAll("g.slice")     
+        .data(pie)                          
+        .enter()                            
+            .append("svg:g")                 
+               .attr("class", "slice")
+			  .on("click", up)	
+		  .on("mouseover",  function (d)
+			   {
+	  d3.select(this).select("path").transition()
+	      .duration(750)
+	        		.attr("stroke","red")
+	        		.attr("stroke-width", 3.5)
+	        		.attr("d", arcFinal3)
+	        		;
+		var nameOfStateVal=d.data.category;
+		
+		var dsSum=0;	
+		var count = 0;
+		dataset.forEach(function(d) {
+          dsSum+=dataset[count].measure;
+			count += 1;
+		});
+ 
+		
+		var statePercentShare=formatAsPercentage(d.data.measure/dsSum);
+					
+		d3.select("#tooltip")
+        .style("left", d3.event.pageX + "px")
+        .style("top", d3.event.pageY + "px")
+        .style("opacity", 1)
+        .select("#nameOfState")
+        .text(nameOfStateVal+'='+statePercentShare);		
+		})
+    	.on("mouseout", mouseout)
+    	;
+    				
+        arcs.append("svg:path")
+               .attr("fill", function(d, i) { return color(i); } )  
+           		;			
+
+        d3.selectAll("g.slice").selectAll("path").transition()
+			    .duration(750)
+			    .attr("d", arcFinal )
+			    ;
+	
+
+	  arcs.filter(function(d) { return d.endAngle - d.startAngle > .2; })
+	  		.append("svg:text")
+	      .attr("dy", ".35em")
+	      .attr("text-anchor", "middle")
+	      .attr("transform", function(d) { return "translate(" + arcFinal.centroid(d) + ")rotate(" + angle(d) + ")"; })
+	      .text(function(d) { return d.data.category; })
+	      ;
+
+		function angle(d) 
+		{
+		    var a = (d.startAngle + d.endAngle) * 90 / Math.PI - 90;
+		    return a > 90 ? a - 180 : a;
+		}
+	
+		vis.append("svg:text")
+	     	.attr("dy", ".35em")
+	      .attr("text-anchor", "middle")
+	      .text("Car Thefts in 2015- Top States")
+	      .attr("class","title")
+	      ;		    
+
+
+	vis.append("text")
+	.attr("x", -35)             
+	.attr("y", 300)    
+	.attr("class", "legend")
+	.style("fill", "steelblue")         
+	.on("click",function(){
+		location.reload();
+	})	
+	.text("Reset Filters");
+
+
+	function mouseout() 
+	{
+	  d3.select(this).select("path").transition()
+	      .duration(750)
+	        		 .attr("stroke","")
+	        		.attr("stroke-width", 1.5)
+	        		.attr("d", arcFinal)
+	        		;
+	}
+	
+	function up(d, i) 
+	{
+				
+				updateBarChart(d.data.category, color(i),"#barChart" );
+				updateLineChart(d.data.category, color(i));
+				updateBarChart(d.data.category, color(i+10),"#barChart2" );
+			 
+			 
+	}
+}
+
+dsPieChart();
+/*BAR CHART */
+
+var datasetBarChart = [
+{ group: "All", category: "Toyota Camry", measure:7604}, 
+{ group: "All", category: "Nissan Altima", measure:1098}, 
+{ group: "All", category: "Honda Accord", measure:35805}, 
+{ group: "All", category: "GMC Pickup", measure:1450}, 
+{ group: "All", category: "Ford Pickup", measure:16170}, 
+{ group: "All", category: "Honda Civic", measure:32938}, 
+{ group: "All", category: "Dodge Pickup", measure:2898}, 
+{ group: "All", category: "Acura Integra", measure:640}, 
+{ group: "All", category: "Chevrolet Pickup", measure:13154}, 
+
+{ group: "California", category: "Honda Accord", measure:  28345 }, 
+{ group: "California", category: "Honda Civic", measure:  28045 }, 
+{ group: "California", category: "Chevrolet Pickup", measure:  6048 }, 
+{ group: "California", category: "Toyota Camry", measure:  5345 }, 
+{ group: "California", category: "Ford Pickup", measure:  4504 }, 
+{ group: "Florida", category: "Ford Pickup", measure:  2070 }, 
+{ group: "Florida", category: "Honda Civic", measure:  1127 }, 
+{ group: "Florida", category: "Nissan Altima", measure:  1098 }, 
+{ group: "Florida", category: "Toyota Camry", measure:  1089 }, 
+{ group: "Florida", category: "Honda Accord", measure:  1025 }, 
+{ group: "Georgia", category: "Honda Accord", measure:  1052 }, 
+{ group: "Georgia", category: "Ford Pickup", measure:  954 }, 
+{ group: "Georgia", category: "Chevrolet Pickup", measure:  948 }, 
+{ group: "Georgia", category: "Honda Civic", measure:  653 }, 
+{ group: "Georgia", category: "Toyota Camry", measure:  568 }, 
+{ group: "Texas", category: "Ford Pickup", measure:  7897 }, 
+{ group: "Texas", category: "Chevrolet Pickup", measure:  6158 }, 
+{ group: "Texas", category: "Dodge Pickup", measure:  2898 }, 
+{ group: "Texas", category: "Honda Accord", measure:  1626 }, 
+{ group: "Texas", category: "GMC Pickup", measure:  1450 }, 
+{ group: "Washington", category: "Honda Accord", measure:  3757 }, 
+{ group: "Washington", category: "Honda Civic", measure:  3113 }, 
+{ group: "Washington", category: "Ford Pickup", measure:  745 }, 
+{ group: "Washington", category: "Acura Integra", measure:  640 }, 
+{ group: "Washington", category: "Toyota Camry", measure:  602 }
+]
+;
+
+
+
+
+var datasetBarChart2 = [
+
+ { group: "All",category:"1989", measure:602},
+ { group: "All",category:"1991", measure:5345},
+ { group: "All",category:"1994", measure:640}, 
+ { group: "All",category:"1996", measure:32102},
+ { group: "All",category:"1997", measure:3703}, 
+ { group: "All",category:"1998", measure:31158},
+ { group: "All",category:"1999", measure:948},
+ { group: "All",category:"2000", measure:1780},
+ { group: "All",category:"2006", measure:21473},
+ { group: "All",category:"2004", measure:9801},
+ { group: "All",category:"2014", measure:1657},
+ { group: "All",category:"2015", measure:2548},
+
+ { group: "All_Dodge Pickup",category:"2004", measure:2898},
+ 
+ { group: "All_GMC Pickup",category:"2015", measure:1450},
+ 
+ { group: "All_Toyota Camry",category:"1989", measure:602},
+ { group: "All_Toyota Camry",category:"1991", measure:5345},
+ { group: "All_Toyota Camry",category:"2014", measure:1657},
+ 
+ { group: "All_Chevrolet Pickup",category:"2004", measure:6158},
+ { group: "All_Chevrolet Pickup",category:"2006", measure:6048},
+ { group: "All_Chevrolet Pickup",category:"1999", measure:948},
+ 
+ { group: "All_Honda Accord",category:"1996", measure:905},
+ { group: "All_Honda Accord",category:"1997", measure:1290},
+{ group: "All_Honda Accord",category:"1998", measure:2989},
+{ group: "All_Honda Accord",category:"1999", measure:3258},
+{ group: "All_Honda Accord",category:"2000", measure:1190},
+{ group: "All_Honda Accord",category:"2005", measure:8721},
+{ group: "All_Honda Accord",category:"2009", measure:5349},
+{ group: "All_Honda Accord",category:"2013", measure:9898},
+{ group: "All_Honda Accord",category:"2015", measure: 1605},
+
+
+ { group: "All_Ford Pickup",category:"2006", measure:15425},
+ { group: "All_Ford Pickup",category:"2004", measure:745},
+
+ { group: "All_Nissan Altima",category:"2013", measure:600}, 
+ { group: "All_Nissan Altima",category:"2015", measure:498},
+ 
+ { group: "All_Acura Integra",category:"1994", measure:640},
+ 
+ { group: "All_Honda Civic",category:"1998", measure:1158},
+ { group: "All_Honda Civic",category:"1999", measure:2334},
+ { group: "All_Honda Civic",category:"2000", measure:4341},
+ { group: "All_Honda Civic",category:"2001", measure:13440},
+ { group: "All_Honda Civic",category:"2003", measure:1892},
+ { group: "All_Honda Civic",category:"2007", measure:7993},
+
+
+
+
+
+ { group: "California",category:"1996", measure:28345},
+ { group: "California",category:"1998", measure:28045},
+ { group: "California",category:"2006", measure:10552},
+ { group: "California",category:"1991", measure:5345},
+ 
+  { group: "Texas",category:"2004", measure:9056},
+ { group: "Texas",category:"2006", measure:7897},
+ { group: "Texas",category:"1997", measure:1626},
+ { group: "Texas",category:"2015", measure:1450},
+ 
+ { group: "Washington",category:"1996", measure:3757},
+ { group: "Washington",category:"1998", measure:3113},
+ { group: "Washington",category:"2004", measure:745},
+ { group: "Washington",category:"1994", measure:640},
+ { group: "Washington",category:"1989", measure:602},
+ { group: "Florida",category:"2006", measure:2070},
+ { group: "Florida",category:"2000", measure:1127},
+ { group: "Florida",category:"2015", measure:1098},
+ { group: "Florida",category:"2014", measure:1089},
+ { group: "Florida",category:"1997", measure:1025}, 
+ { group: "Georgia",category:"1997", measure:1052},
+ { group: "Georgia",category:"2006", measure:954},
+ { group: "Georgia",category:"1999", measure:948},
+ { group: "Georgia",category:"2000", measure:653},
+ { group: "Georgia",category:"2014", measure:568},
+ 
+{ group: "California_Chevrolet Pickup" , category:"2006" , measure: 2048 },
+{ group: "California_Chevrolet Pickup" , category:"2008" , measure: 4000 },
+{ group: "California_Ford Pickup" , category:"2006" , measure: 1504 },
+{ group: "California_Ford Pickup" , category:"2010" , measure: 3000 },
+
+{ group: "California_Honda Accord" , category:"1996" , measure: 8345 },
+{ group: "California_Honda Accord" , category:"2000" , measure: 6400 },
+{ group: "California_Honda Accord" , category:"2005" , measure: 13690 },
+
+{ group: "California_Honda Civic" , category:"1998" , measure: 8045 },
+{ group: "California_Honda Civic" , category:"1999" , measure: 15000 },
+{ group: "California_Honda Civic" , category:"2004" , measure: 5000 },
+
+{ group: "California_Toyota Camry" , category:"1991" , measure: 2600 },
+{ group: "California_Toyota Camry" , category:"1997" , measure: 1000 },
+{ group: "California_Toyota Camry" , category:"1999" , measure: 1745 },
+
+
+{ group: "Florida_Ford Pickup" , category:"2006" , measure: 270 },
+{ group: "Florida_Ford Pickup" , category:"2008" , measure: 425 },
+{ group: "Florida_Ford Pickup" , category:"2009" , measure: 651 },
+{ group: "Florida_Ford Pickup" , category:"2010" , measure: 724 },
+{ group: "Florida_Honda Accord" , category:"1997" , measure: 525 },
+{ group: "Florida_Honda Accord" , category:"1999" , measure: 500 },
+{ group: "Florida_Honda Civic" , category:"2000" , measure: 327 },
+{ group: "Florida_Honda Civic" , category:"2001" , measure: 450 },
+{ group: "Florida_Honda Civic" , category:"2002" , measure: 350 },
+{ group: "Florida_Nissan Altima" , category:"2014" , measure: 698 },
+{ group: "Florida_Nissan Altima" , category:"2015" , measure: 400 },
+{ group: "Florida_Toyota Camry" , category:"2013" , measure: 789 },
+{ group: "Florida_Toyota Camry" , category:"2014" , measure: 300 },
+
+
+{ group: "Georgia_Chevrolet Pickup" , category:"1999" , measure: 348 },
+{ group: "Georgia_Chevrolet Pickup" , category:"2000" , measure: 600 },
+{ group: "Georgia_Ford Pickup" , category:"2006" , measure: 384 },
+{ group: "Georgia_Ford Pickup" , category:"2008" , measure: 570 },
+{ group: "Georgia_Honda Accord" , category:"1997" , measure: 272 },
+{ group: "Georgia_Honda Accord" , category:"1997" , measure: 452 },
+{ group: "Georgia_Honda Accord" , category:"1997" , measure: 328 },
+{ group: "Georgia_Honda Civic" , category:"2000" , measure: 302},
+{ group: "Georgia_Honda Civic" , category:"2001" , measure: 198 },
+{ group: "Georgia_Honda Civic" , category:"2002" , measure:  153 },
+{ group: "Georgia_Toyota Camry" , category:"2014" , measure: 168 },
+{ group: "Georgia_Toyota Camry" , category:"2014" , measure: 468 },
+
+
+{ group: "Texas_Chevrolet Pickup" , category:"2004" , measure: 1158 },
+{ group: "Texas_Chevrolet Pickup" , category:"2005" , measure: 2321 },
+{ group: "Texas_Chevrolet Pickup" , category:"2006" , measure: 2679 },
+
+{ group: "Texas_Dodge Pickup" , category:"2004" , measure: 2000 },
+{ group: "Texas_Dodge Pickup" , category:"2004" , measure:  898},
+
+
+{ group: "Texas_Ford Pickup" , category:"2006" , measure: 897 },
+{ group: "Texas_Ford Pickup" , category:"2006" , measure: 1213 },
+{ group: "Texas_Ford Pickup" , category:"2006" , measure: 3274 },
+{ group: "Texas_Ford Pickup" , category:"2006" , measure: 2513 },
+
+
+{ group: "Texas_GMC Pickup" , category:"2015" , measure: 450 },
+{ group: "Texas_GMC Pickup" , category:"2015" , measure: 1000 },
+{ group: "Texas_Honda Accord" , category:"1997" , measure: 1000 },
+{ group: "Texas_Honda Accord" , category:"1997" , measure: 626 },
+
+
+{ group: "Washington_Acura Integra" , category:"1994" , measure: 200 },
+{ group: "Washington_Acura Integra" , category:"1994" , measure: 340 },
+{ group: "Washington_Acura Integra" , category:"1994" , measure: 100 },
+
+{ group: "Washington_Ford Pickup" , category:"2004" , measure: 145 },
+{ group: "Washington_Ford Pickup" , category:"2004" , measure: 400 },
+{ group: "Washington_Ford Pickup" , category:"2004" , measure: 200 },
+
+{ group: "Washington_Honda Accord" , category:"1996" , measure: 757 },
+{ group: "Washington_Honda Accord" , category:"1996" , measure: 1423 },
+{ group: "Washington_Honda Accord" , category:"1996" , measure: 1577 },
+
+{ group: "Washington_Honda Civic" , category:"1998" , measure: 614 },
+{ group: "Washington_Honda Civic" , category:"1998" , measure: 1700 },
+{ group: "Washington_Honda Civic" , category:"1998" , measure: 799 },
+
+{ group: "Washington_Toyota Camry" , category:"1989" , measure: 241 },
+{ group: "Washington_Toyota Camry" , category:"1989" , measure: 170 },
+{ group: "Washington_Toyota Camry" , category:"1989" , measure: 191 }
+]
+;
+
+
+
+var group = "All";
+
+function datasetBarChosen(group,css_style_name) {
+	var ds = [];
+	if(css_style_name=="#barChart")
+	{
+		for (x in datasetBarChart) 
+			{
+			 if(datasetBarChart[x].group==group)
+				{
+					ds.push(datasetBarChart[x]);
+				}	 
+			}
+	}
+	else
+	{
+		for (x in datasetBarChart2) 
+			{
+			 if(datasetBarChart2[x].group==group)
+				{
+					ds.push(datasetBarChart2[x]);
+				}	 
+			}
+	}
+	
+	return ds;
+}
+
+
+function dsBarChartBasics() {
+
+		var margin = {top: 30, right: 5, bottom: 20, left: 50},
+		width = 1000 - margin.left - margin.right,
+	    height = 200 - margin.top - margin.bottom,
+		colorBar = d3.scale.category20(),
+		barPadding = 1
+		;
+		
+		return {
+			margin : margin, 
+			width : width, 
+			height : height, 
+			colorBar : colorBar, 
+			barPadding : barPadding
+		}			
+		;
+}
+
+
+function dsBarChart(css_style_name) {
+    var group = "All";
+	
+	var firstDatasetBarChart = datasetBarChosen(group,css_style_name);         	
+		
+	var basics = dsBarChartBasics();
+	
+	var margin = basics.margin,
+		width = basics.width,
+	   height = basics.height,
+		colorBar = basics.colorBar,
+		barPadding = basics.barPadding
+		;
+					
+	var 	xScale = d3.scale.linear()
+						.domain([0, firstDatasetBarChart.length])
+						.range([0, width])
+						;
+						
+	var yScale = d3.scale.linear()
+		   .domain([0, d3.max(firstDatasetBarChart, function(d) { return d.measure; })])
+		   .range([height, 0]);
+	
+	var plotName;
+	
+	if(css_style_name=="#barChart")
+	{
+		plotName ="barChartPlot";
+	}	
+	else 
+	{
+		plotName ="barChartPlot2";
+	}
+
+	var svg = d3.select(css_style_name)
+			.append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("id",plotName)
+		    ;
+	
+	var plot = svg
+		    .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		    ;
+	            
+	plot.selectAll("rect")
+		   .data(firstDatasetBarChart)
+		   .enter()
+		   .append("rect")
+			.attr("x", function(d, i) {
+			    return xScale(i);
+			})
+		   .attr("width", width / firstDatasetBarChart.length - barPadding)   
+			.attr("y", function(d) {
+			    return yScale(d.measure);
+			})  
+			.attr("height", function(d) {
+			    return height-yScale(d.measure);
+			})
+			.attr("fill", "grey")
+			.on("click", function (d,i)
+				{
+					if(css_style_name=="#barChart")
+					{
+						var chartCategory=group+'_'+d.category;
+						console.log("chartCategory="+chartCategory);
+						updateBarChart(chartCategory, color(i+10),"#barChart2");
+					}
+				}
+				)			
+			;
+	
+	plot.selectAll("text")
+	.data(firstDatasetBarChart)
+	.enter()
+	.append("text")
+	.text(function(d) {
+			return formatAsInteger(d3.round(d.measure));
+	})
+	.attr("text-anchor", "middle")
+	
+	.attr("x", function(d, i) {
+			return (i * (width / firstDatasetBarChart.length)) + ((width / firstDatasetBarChart.length - barPadding) / 2);
+	})
+	.attr("y", function(d) {
+			return yScale(d.measure) + 14;
+	})
+	.attr("class", "yAxis")
+	;
+	
+	
+	
+	var xLabels = svg
+		    .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + (margin.top + height)  + ")")
+		    ;
+	
+	xLabels.selectAll("text.xAxis")
+		  .data(firstDatasetBarChart)
+		  .enter()
+		  .append("text")
+		  .text(function(d) { return d.category;})
+		  .attr("text-anchor", "middle")
+						   .attr("x", function(d, i) {
+						   		return (i * (width / firstDatasetBarChart.length)) + ((width / firstDatasetBarChart.length - barPadding) / 2);
+						   })
+		  .attr("y", 15)
+		  .attr("class", "xAxis")
+		  ;			
+	 
+	
+	var barChart_Title;
+	if (css_style_name=="#barChart")
+		{
+			barChart_Title="Top Car Theft Statistics by Car Model in 2015"
+		}
+	else 
+		{
+			barChart_Title="Top Car Theft Statistics by Car Model Year"
+		}
+		
+	svg.append("text")
+		.attr("x", (width + margin.left + margin.right)/2)
+		.attr("y", 15)
+		.attr("class","title")				
+		.attr("text-anchor", "middle")
+		.text(barChart_Title)
+		;
+}
+dsBarChart("#barChart");
+
+
+dsBarChart("#barChart2");
+
+ 
+function updateBarChart(group, colorChosen,css_style_name) {
+	
+		var currentDatasetBarChart = datasetBarChosen(group,css_style_name);
+		
+		var basics = dsBarChartBasics();
+	
+		var margin = basics.margin,
+			width = basics.width,
+		   height = basics.height,
+			colorBar = basics.colorBar,
+			barPadding = basics.barPadding
+			;
+		
+		var 	xScale = d3.scale.linear()
+			.domain([0, currentDatasetBarChart.length])
+			.range([0, width])
+			;
+		
+			
+		var yScale = d3.scale.linear()
+	      .domain([0, d3.max(currentDatasetBarChart, function(d) { return d.measure; })])
+	      .range([height,0])
+	      ;
+
+if (css_style_name=="#barChart")
+		{
+			  d3.selectAll("#barChart svg").remove(); 
+		}
+	else 
+		{
+			  d3.selectAll("#barChart2 svg").remove(); 
+		}		
+	 
+	var plotName;
+	
+	if(css_style_name=="#barChart")
+	{
+		plotName ="barChartPlot";
+	}	
+	else 
+	{
+		plotName ="barChartPlot2";
+	}
+
+	var svg = d3.select(css_style_name)
+			.append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("id",plotName)
+		    ;
+	
+	var plot = svg
+		    .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		    ;
+	            	 
+	    plot.datum(currentDatasetBarChart);
+	  	plot.selectAll("rect")
+	      .data(currentDatasetBarChart)
+		   .enter()
+		   .append("rect")
+			.attr("x", function(d, i) {
+			    return xScale(i);
+			})
+		   .attr("width", width / currentDatasetBarChart.length - barPadding)   
+			.attr("y", function(d) {
+			    return yScale(d.measure);
+			})  
+			.attr("height", function(d) {
+			    return height-yScale(d.measure);
+			})
+			.attr("fill", colorChosen)
+			.on("click", function (d,i)
+				{
+					if(css_style_name=="#barChart")
+					{
+						var chartCategory=group+'_'+d.category;
+						console.log("chartCategory="+chartCategory);
+						updateBarChart(chartCategory, color(i+10),"#barChart2");
+					}
+				}
+				)				
+	
+			;
+		
+		plot.selectAll("text.yAxis") 
+			.data(currentDatasetBarChart)
+			.enter()
+			.append("text")
+		   .attr("text-anchor", "middle")
+		   .attr("x", function(d, i) {
+		   		return (i * (width / currentDatasetBarChart.length)) + ((width / currentDatasetBarChart.length - barPadding) / 2);
+		   })
+		   .attr("y", function(d) {
+		   		return yScale(d.measure) + 14;
+		   })
+		   .text(function(d) {
+				return formatAsInteger(d3.round(d.measure));
+		   })
+		   .attr("class", "yAxis")					 
+		;
+		
+	var xLabels = svg
+		    .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + (margin.top + height)  + ")")
+		    ;
+
+		xLabels.selectAll("text.xAxis")
+		  .data(currentDatasetBarChart)
+		  .enter()
+		  .append("text")
+		  .text(function(d) { return d.category;})
+		  .attr("text-ancurrentDatasetBarChartchor", "middle")
+						   .attr("x", function(d, i) {
+						   		return (i * (width / currentDatasetBarChart.length)) + ((width / currentDatasetBarChart.length - barPadding) / 2);
+						   })
+		  .attr("y", 15)
+		  .attr("class", "xAxis")
+		  ;
+		  
+		  
+
+	var barChart_Title;
+	if (css_style_name=="#barChart")
+		{
+			barChart_Title="Top Car Theft Statistics by Car Model in 2015 for "+group;
+		}
+	else 
+		{
+			barChart_Title="Top Car Theft Statistics by Model Year for "+group;
+		}
+		
+	svg.append("text")
+		.attr("x", (width + margin.left + margin.right)/2)
+		.attr("y", 15)
+		.attr("class","title")				
+		.attr("text-anchor", "middle")
+		.text(barChart_Title)
+		;
+}
+
+
+
+
+
+/*
+LINE CHART 
+*/
+
+var datasetLineChart = [
+
+{ group: "All", category: "Honda Accord", measure:  28345 }, 
+{ group: "All", category: "Honda Civic", measure: 28045 }, 
+{ group: "All", category: "Chevrolet Pickup", measure: 12206 }, 
+{ group: "All", category: "Ford Pickup", measure: 7897 }, 
+{ group: "All", category: "Dodge Pickup", measure: 2898 }, 
+
+{ group: "California", category: "Honda Accord", measure:  28345 }, 
+{ group: "California", category: "Honda Civic", measure: 28045 }, 
+{ group: "California", category: "Chevrolet Pickup", measure: 6048 }, 
+{ group: "California", category: "Ford Pickup", measure: 0 }, 
+{ group: "California", category: "Dodge Pickup", measure: 0 }, 
+
+{ group: "Texas", category: "Honda Accord", measure:  0 }, 
+{ group: "Texas", category: "Honda Civic", measure: 0 }, 
+{ group: "Texas", category: "Chevrolet Pickup", measure: 6158 }, 
+{ group: "Texas", category: "Ford Pickup", measure: 7897 }, 
+{ group: "Texas", category: "Dodge Pickup", measure: 2898 },
+
+{ group: "Washington", category: "Honda Accord", measure:  20 }, 
+{ group: "Washington", category: "Honda Civic", measure: 50 }, 
+{ group: "Washington", category: "Chevrolet Pickup", measure: 100 }, 
+{ group: "Washington", category: "Ford Pickup", measure: 170 }, 
+{ group: "Washington", category: "Dodge Pickup", measure: 290 },
+
+{ group: "Florida", category: "Honda Accord", measure:  500 }, 
+{ group: "Florida", category: "Honda Civic", measure: 600 }, 
+{ group: "Florida", category: "Chevrolet Pickup", measure: 925 }, 
+{ group: "Florida", category: "Ford Pickup", measure: 1000 }, 
+{ group: "Florida", category: "Dodge Pickup", measure: 2100 },
+
+{ group: "Georgia", category: "Honda Accord", measure:  4000 }, 
+{ group: "Georgia", category: "Honda Civic", measure: 7000 }, 
+{ group: "Georgia", category: "Chevrolet Pickup", measure: 11000 }, 
+{ group: "Georgia", category: "Ford Pickup", measure: 3999 }, 
+{ group: "Georgia", category: "Dodge Pickup", measure: 6000 }
+
+];
+
+
+var group = "All";
+
+function datasetLineChartChosen(group) {
+	var ds = [];
+	for (x in datasetLineChart) {
+		 if(datasetLineChart[x].group==group){
+		 	ds.push(datasetLineChart[x]);
+		 }
+		}
+	return ds;
+}
+
+function dsLineChartBasics() {
+	var margin = {top: 20, right: 10, bottom: 20, left: 50},
+	    width = 800 - margin.left - margin.right,
+	    height = 120 - margin.top - margin.bottom
+	    ;
+		return {
+			margin : margin,
+			width : width,
+			height : height
+		}
+		;
+}
+
+
+function dsLineChart() {
+
+	var firstDatasetLineChart = datasetLineChartChosen(group);
+
+	var basics = dsLineChartBasics();
+
+	var margin = basics.margin,
+		width = basics.width,
+	   height = basics.height
+		;
+
+	var xScale = d3.scale.linear()
+	    .domain([0, firstDatasetLineChart.length-1])
+	    .range([0, width])
+	    ;
+
+	var yScale = d3.scale.linear()
+	    .domain([0, d3.max(firstDatasetLineChart, function(d) { return d.measure; })])
+	    .range([height, 0])
+	    ;
+
+	var line = d3.svg.line()
+	    .x(function(d, i) { return xScale(i); })
+	    .y(function(d) { return yScale(d.measure); })
+	    ;
+
+	var svg = d3.select("#lineChart").append("svg")
+	    .datum(firstDatasetLineChart)
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	
+	var plot = svg
+	    .append("g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+	    .attr("id", "lineChartPlot")
+	    ;
+
+		 
+	var dsLength=firstDatasetLineChart.length;
+	
+	var dsSum=0;	
+	
+	var count = 0;
+
+	firstDatasetLineChart.forEach(function(d) {
+          dsSum+=firstDatasetLineChart[count].measure;
+			count += 1;
+ });
+ 
+	plot.append("text")
+		.text(dsSum)
+		.attr("id","lineChartTitle2")
+		.attr("x",width/2)
+		.attr("y",height/2)
+		;
+	 
+	plot.append("path")
+	    .attr("class", "line")
+	    .attr("d", line)
+	   	.attr("stroke", "lightgrey")
+	    ;
+
+	plot.selectAll(".dot")
+	    .data(firstDatasetLineChart)
+	  	 .enter().append("circle")
+	    .attr("class", "dot")
+	    .attr("fill", function (d) { return d.measure==d3.min(firstDatasetLineChart, function(d) { return d.measure; }) ? "red" : (d.measure==d3.max(firstDatasetLineChart, function(d) { return d.measure; }) ? "green" : "black") } )
+	    .attr("cx", line.x())
+	    .attr("cy", line.y())
+	    .attr("r", 3.5)
+	    .attr("stroke", "lightgrey")
+	    .append("title")
+	    .text(function(d) { return d.category + ": " + formatAsInteger(d.measure); })
+	    ;
+
+	svg.append("text")
+		.attr("x",margin.left + ((width + margin.right)/2))
+		.attr("y", 10)
+		.attr("class","title")	
+		.attr("text-anchor", "middle")
+		.attr("id","lineChartTitle1")
+		.text("Total Car Thefts for top states in 2015")
+		;
+}
+
+dsLineChart();
+
+
+
+function updateLineChart(group, colorChosen) {
+
+	var currentDatasetLineChart = datasetLineChartChosen(group);
+
+	var basics = dsLineChartBasics();
+
+	var margin = basics.margin,
+		width = basics.width,
+	   height = basics.height
+		;
+
+	var xScale = d3.scale.linear()
+	    .domain([0, currentDatasetLineChart.length-1])
+	    .range([0, width])
+	    ;
+
+	var yScale = d3.scale.linear()
+	    .domain([0, d3.max(currentDatasetLineChart, function(d) { return d.measure; })])
+	    .range([height, 0])
+	    ;
+
+	var line = d3.svg.line()
+    .x(function(d, i) { return xScale(i); })
+    .y(function(d) { return yScale(d.measure); })
+    ;
+
+   var plot = d3.select("#lineChartPlot")
+   	.datum(currentDatasetLineChart)
+	   ;
+
+	 
+	var dsLength=currentDatasetLineChart.length;
+	var dsSum=0;	
+	
+	var count = 0;
+
+	currentDatasetLineChart.forEach(function(d) {
+    		  dsSum+=currentDatasetLineChart[count].measure;
+			count += 1;
+ });
+ 	
+
+	plot.select("text")
+	.text(dsSum);
+		
+	plot
+	.select("path")
+		.transition()
+		.duration(750)
+	   .attr("class", "line")
+	   .attr("d", line)
+		.attr("stroke", colorChosen)
+	   ;
+
+	var path = plot
+		.selectAll(".dot")
+	   .data(currentDatasetLineChart)
+	   .transition()
+		.duration(750)
+	   .attr("class", "dot")
+	   .attr("fill", function (d) { return d.measure==d3.min(currentDatasetLineChart, function(d) { return d.measure; }) ? "red" : (d.measure==d3.max(currentDatasetLineChart, function(d) { return d.measure; }) ? "green" : "black") } )
+	   .attr("cx", line.x())
+	   .attr("cy", line.y())
+	   .attr("r", 3.5)
+		.attr("stroke", colorChosen)
+	   ;
+ 
+   var svg = d3.select("#lineChart svg").select("#lineChartTitle1") 
+	.text("Total Car Thefts for "+group+" state in 2015");
+		
+}
+
+
+    </script>
+  </body>
+</html>
